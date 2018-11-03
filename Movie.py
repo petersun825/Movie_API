@@ -4,7 +4,7 @@ Modes:
     `search`: Will search for movies based on a given string
     `ratings`: Will return ratings for movies
 
-Author: Robby Grodin
+Author: Peter Sun 
 """
 
 import requests
@@ -32,7 +32,6 @@ class OMDBClient():
     def get_movie(self, movie_title):
         url = self.movie_url.format(api_key.AUTH_KEY, movie_title)
         response = requests.get(url)
-        
         return Movie(response.json())
     
     def search_movie(self, movie_title):
@@ -42,15 +41,16 @@ class OMDBClient():
 
         response=response.json()
        
-        response_list=response['Search']
-        print('response_list',response_list)
-        movie = []
-        for titles in response_list:
-            movie = titles
+        response_search=response['Search']
+        # print('response_list',response_list)
+        # movie = []
+        # for titles in response_list:
+        #     movie = titles
 
         # print('search movie', movie)
-        print(movie)
-        return Movie(movie)
+        print('response search\n\n',response_search)
+        return Movie(response_search)
+
 
 
 
@@ -66,39 +66,63 @@ class Movie():
         #     self.title=movie_data['title']
         # elif type(movie_data)==
         #     self.title=movie_data
-        try:
-            if type(movie_data) is list
-        self.title = movie_data['Title']
-        try:
-            self.rating = movie_data['Ratings']
-        except KeyError:
-            pass
+       
+            self.title = movie_data
+           
+            self.rating = movie_data
+       
 
 
     def get_title(self):
         """
         get_movie_title is a getter function that returns the movie title.
         """
+        titles=[], num=0
+        try:
+            if type(self.title) is list:
+                for movie in self.title:
 
-        return self.title
+                    titles.append(movie['Title'])
+                    
+                    
+                return titles
+
+            elif type(self.title) is dict:
+                self.title = self.title['Title']
+                return self.title
+            else:
+                pass
+            
+
+        except KeyError:
+            print('Didn\'t find any title')
+            pass
 
     def get_rating(self):
         """
         get_movie_rating is a getter function that returns the rating.
         """
+        # try:
+        # if type(self.rating) is list:  
+        #         rating=movie['Rating'] for movie in self.rating:
+        #         self.rating = title
+        #     return self.title
+
+        # elif type(self.title) is dict:
+        #     self.title=self.title['Title']
+        #     return self.title
+
         for key in self.rating:
             print(key)
             print(self.rating[key])
             # if key['Source'] == 'Rotten Tomatoes'
             # return value
 
-g=OMDBClient()
-g.get_movie('blade')
-g.search_movie('blade')
+
 
 # print(Movie.get_title())
 
-wait=input("PRESS ENTER TO CONTINUE")
+
 # def build_movie(movie_title, movie_rating):
 #     """Take in the movie title and rating, and return the movie object."""
 
@@ -106,7 +130,10 @@ wait=input("PRESS ENTER TO CONTINUE")
 
 def print_search_results(movie_titles):
     """Print list of movies"""
+    # movie_titles=Movie.get_title()
+
     for title in movie_titles:
+        
         print(title)
 
 def print_movie_rating(movie):
@@ -118,6 +145,8 @@ def print_all_ratings(movie_list):
     for movie in movie_list:
         print("The movie", movie.get_title(), "has a rating of", movie.get_rating())
 
+
+
 # Create one main function that will call everything else.
 def main():
 
@@ -125,13 +154,17 @@ def main():
     Main is the entry point into the program, and it calls into the search or
     ratings functions depending on what the user decides to do.
     """
+    title = input('Please input the movie you would like to search for: ')
+    movie = OMDBClient()
 
+    mode='search'
     # set up default values for testing
     default_movie_list = ['Clerks', 'Dogma', 'Chasing Amy']
     default_movie = Movie({'title': 'clerks', 'rating':10})
     
     if mode == 'search':
-        print_search_results()
+        print_search_results(movie.search_movie(title).get_title())
+
     elif mode == 'ratings':
         print_movie_rating(default_movie)
     else:
