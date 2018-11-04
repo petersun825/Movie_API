@@ -36,6 +36,7 @@ class OMDBClient():
     
     def search_movie(self, movie_title):
         url = self.search_url.format(api_key.AUTH_KEY, movie_title)
+        print('url', url)
         # print(url)
         response = requests.get(url)
 
@@ -48,7 +49,8 @@ class OMDBClient():
         #     movie = titles
 
         # print('search movie', movie)
-        print('response search\n\n',response_search)
+      
+        #returns a list of dictionaries(info about searched movies)
         return Movie(response_search)
 
 
@@ -61,14 +63,8 @@ class Movie():
     including the title and rating.
     """
 
-    def __init__(self, movie_data):
-        # if type(movie_data)==
-        #     self.title=movie_data['title']
-        # elif type(movie_data)==
-        #     self.title=movie_data
-       
+    def __init__(self, movie_data):       
             self.title = movie_data
-           
             self.rating = movie_data
        
 
@@ -77,14 +73,11 @@ class Movie():
         """
         get_movie_title is a getter function that returns the movie title.
         """
-        titles=[], num=0
+        titles=[]
         try:
             if type(self.title) is list:
                 for movie in self.title:
-
-                    titles.append(movie['Title'])
-                    
-                    
+                    titles.append(movie['Title'])       
                 return titles
 
             elif type(self.title) is dict:
@@ -111,10 +104,16 @@ class Movie():
         # elif type(self.title) is dict:
         #     self.title=self.title['Title']
         #     return self.title
-
-        for key in self.rating:
-            print(key)
-            print(self.rating[key])
+        reviews=[]
+        for review in self.rating['Ratings']:
+            # for key, value in review['Source']:
+            reviews.append({review['Source']: review['Value']})
+        return reviews
+                
+        
+            
+        
+      
             # if key['Source'] == 'Rotten Tomatoes'
             # return value
 
@@ -127,25 +126,52 @@ class Movie():
 #     """Take in the movie title and rating, and return the movie object."""
 
 #     return Movie({'title': movie_title, 'rating': movie_rating})
+def verify_movie_choice():
+    movie_choice=int(input('Which one you like to choose? select the number: '))
+    if type(movie_choice)!= int:
+        movie_choice=input('Please input the number: ')
+    else:
+        return movie_choice
 
-def print_search_results(movie_titles):
+def choose(titles, movie_choice):
+   
+    index, movie_choice=titles[movie_choice-1]
+    print('You choose: ', index,':', movie_choice)
+    return movie_choice
+
+
+def print_search_results(search_title):
     """Print list of movies"""
-    # movie_titles=Movie.get_title()
-
-    for title in movie_titles:
-        
+    
+                  #instantiates class OMDBClient() which is APIClient    
+    movies = OMDBClient().search_movie(search_title).get_title()
+    
+    titles = list(enumerate(movies, start=1))
+    for title in titles:
         print(title)
+    return titles    
 
 def print_movie_rating(movie):
     """Print a movie's title and rating in a formatted string."""
-    print("The rating for", movie.get_title(), "is",  movie.get_rating())
+    movies=OMDBClient().get_movie(movie)
+    print("The rating for", movies.get_title(), "is",  movies.get_rating())
 
 def print_all_ratings(movie_list):
     """Given a list of movie objects, print the ratings for each one."""
-    for movie in movie_list:
+    movies=OMDBClient().get_movie(movie_list)
+    for movie in movies:
+        print(movie)
         print("The movie", movie.get_title(), "has a rating of", movie.get_rating())
 
+def print_search(mode, title):
+    if mode == 'search':
+        return print_search_results(title)
 
+        
+    elif mode == 'ratings':
+        print_movie_rating(title)
+    else:
+        print('Invalid mode!')
 
 # Create one main function that will call everything else.
 def main():
@@ -153,22 +179,25 @@ def main():
     """
     Main is the entry point into the program, and it calls into the search or
     ratings functions depending on what the user decides to do.
-    """
-    title = input('Please input the movie you would like to search for: ')
-    movie = OMDBClient()
-
-    mode='search'
-    # set up default values for testing
-    default_movie_list = ['Clerks', 'Dogma', 'Chasing Amy']
-    default_movie = Movie({'title': 'clerks', 'rating':10})
+    """ 
     
-    if mode == 'search':
-        print_search_results(movie.search_movie(title).get_title())
+    search_title = input('Please input the movie you would like to search for: ') #assigns a title to search for
+    titles=print_search('search', search_title)
+    # print('titles: ', titles)
+    movie_choice=verify_movie_choice()
+    # print('movie_choice: ', movie_choice)
+    movie_choice=choose(titles, movie_choice)
+    search_rating=print_search('ratings', movie_choice)
 
-    elif mode == 'ratings':
-        print_movie_rating(default_movie)
-    else:
-        print('Invalid mode!')
+    print_all_ratings(['blade', 'home'])
+
+
+    # mode='ratings'
+    # set up default values for testing
+    # default_movie_list = ['Clerks', 'Dogma', 'Chasing Amy']
+    # default_movie = Movie({'title': 'clerks', 'rating':10})
+    
+
 
 # This line tells Python to run main() when it first opens.
 if __name__ == "__main__":
